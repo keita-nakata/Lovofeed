@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>みんなで育てるノイマン</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>みんなで育てるノイマン</h1>
+    <p class="subtitle">みんなが研究室に来ると、ノイマンに愛情を与えることができるよ！</p>
+  </header>
+
+  <!-- -----------------------------------------------------------------------
+    Main scene: pet in center, member avatars arranged around it
+  ------------------------------------------------------------------------ -->
+  <div class="scene">
+
+    <!-- Member avatars positioned around the pet in an ellipse.
+         Positions are calculated so 13 avatars spread evenly around a
+         380×380px ellipse (cx=210, cy=210, rx=170, ry=155).
+         Replace initials with real member names and add background-image for photos -->
+    <div id="member-ring">
+
+      <!--
+        Ellipse parameters used for positioning:
+          center: (211, 211) within the 420x420 scene
+          rx = 172, ry = 150
+          angle step = 360/13 ≈ 27.69°, starting from top (−90°)
+          Avatar size = 48px, so offset each by −24px to center.
+
+        Member 1  angle=  -90.0°  → left: 187px, top:  37px
+        Member 2  angle=  -62.3°  → left: 323px, top:  65px
+        Member 3  angle=  -34.6°  → left: 354px, top: 145px  (approx)
+        Member 4  angle=   -6.9°  → left: 357px, top: 186px
+        Member 5  angle=   20.8°  → left: 316px, top: 288px
+        Member 6  angle=   48.5°  → left: 247px, top: 342px
+        Member 7  angle=   76.2°  → left: 154px, top: 357px
+        Member 8  angle=  103.9°  → left:  62px, top: 342px
+        Member 9  angle=  131.5°  → left:   8px, top: 288px
+        Member 10 angle=  159.2°  → left:   7px, top: 186px  (approx)
+        Member 11 angle=  186.9°  → left:  18px, top: 145px
+        Member 12 angle=  214.6°  → left:  59px, top:  65px
+        Member 13 angle=  242.3°  → left: 131px, top:  37px
+      -->
+
+      <div id="avatar-1"  class="avatar away" style="left:187px; top: 37px;" title="Member 1">M1</div>
+      <div id="avatar-2"  class="avatar away" style="left:323px; top: 62px;" title="Member 2">M2</div>
+      <div id="avatar-3"  class="avatar away" style="left:358px; top:142px;" title="Member 3">M3</div>
+      <div id="avatar-4"  class="avatar away" style="left:361px; top:188px;" title="Member 4">M4</div>
+      <div id="avatar-5"  class="avatar away" style="left:320px; top:290px;" title="Member 5">M5</div>
+      <div id="avatar-6"  class="avatar away" style="left:249px; top:345px;" title="Member 6">M6</div>
+      <div id="avatar-7"  class="avatar away" style="left:163px; top:360px;" title="Member 7">M7</div>
+      <div id="avatar-8"  class="avatar away" style="left: 66px; top:345px;" title="Member 8">M8</div>
+      <div id="avatar-9"  class="avatar away" style="left:  6px; top:290px;" title="Member 9">M9</div>
+      <div id="avatar-10" class="avatar away" style="left:  4px; top:188px;" title="Member 10">M10</div>
+      <div id="avatar-11" class="avatar away" style="left: 14px; top:142px;" title="Member 11">M11</div>
+      <div id="avatar-12" class="avatar away" style="left: 51px; top: 62px;" title="Member 12">M12</div>
+      <div id="avatar-13" class="avatar away" style="left:131px; top: 37px;" title="Member 13">M13</div>
+
+    </div><!-- /#member-ring -->
+
+    <!-- -----------------------------------------------------------------------
+      Pet character — pure CSS creature (placeholder).
+      Replace these divs with <img> tags pointing to your mascot images
+    ------------------------------------------------------------------------ -->
+    <div id="pet-wrapper">
+      <div id="pet" class="pet stage-egg mood-neutral">
+
+        <!-- Sprout leaf (visible from Sprout stage onward) -->
+        <div id="pet-sprout"></div>
+
+        <!-- Face -->
+        <div id="pet-face">
+          <div class="eyes">
+            <div class="eye neutral"></div>
+            <div class="eye neutral"></div>
+          </div>
+          <div id="pet-mouth" class="mouth neutral"></div>
+        </div>
+
+      </div>
+    </div><!-- /#pet-wrapper -->
+
+  </div><!-- /.scene -->
+
+  <!-- -----------------------------------------------------------------------
+    Info panel: stage name, progress bar, feeding rate
+  ------------------------------------------------------------------------ -->
+  <div class="info-panel">
+
+    <div class="stage-row">
+      <span class="stage-label">Stage</span>
+      <span id="stage-name">Egg</span>
+    </div>
+
+    <div>
+      <div class="progress-bar-track">
+        <div id="progress-fill" style="width: 0%"></div>
+      </div>
+      <div id="progress-text">0 / 99 pts</div>
+    </div>
+
+    <div id="feeding-rate" class="feeding-rate sleeping">😴 nobody home</div>
+
+    <div class="meta">
+      <span id="total-points">Total: 0 pts</span>
+      <span id="last-updated">Updating…</span>
+    </div>
+
+  </div><!-- /.info-panel -->
+
+  <!-- Scripts — config and api must load before app -->
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
