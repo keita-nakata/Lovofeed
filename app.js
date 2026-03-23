@@ -1,16 +1,17 @@
 // app.js — Main application logic for the lab pet-raising app
 
 // ---------------------------------------------------------------------------
-// Growth stage definitions
+// Level system
 // ---------------------------------------------------------------------------
-// threshold = points needed to enter this stage
-const STAGES = [
-  { name: 'Egg',     threshold: 0,    size: 80  },
-  { name: 'Sprout',  threshold: 300, size: 100 },
-  { name: 'Small',   threshold: 1000, size: 120 },
-  { name: 'Growing', threshold: 2500, size: 150 },
-  { name: 'Adult',   threshold: 5000, size: 180 },
-];
+// Returns { level, progress, size, isMax }
+function getLevel(points) {
+  const maxPoints = CONFIG.POINTS_PER_LEVEL * CONFIG.MAX_LEVEL;
+  const level     = Math.min(Math.floor(points / CONFIG.POINTS_PER_LEVEL) + 1, CONFIG.MAX_LEVEL);
+  const isMax     = points >= maxPoints;
+  const progress  = isMax ? 1 : (points % CONFIG.POINTS_PER_LEVEL) / CONFIG.POINTS_PER_LEVEL;
+  const size      = 80 + (level - 1) * 10; // 80px at Lv.1 → 170px at Lv.10
+  return { level, progress, size, isMax };
+}
 
 // ---------------------------------------------------------------------------
 // Feeding rate formula: f(n) = 2 * (1 - 0.5^n)
@@ -19,28 +20,6 @@ const STAGES = [
 function feedingRate(n) {
   if (n === 0) return 0;
   return 2 * (1 - Math.pow(0.5, n));
-}
-
-// ---------------------------------------------------------------------------
-// Growth stage lookup based on current points
-// ---------------------------------------------------------------------------
-function getStage(points) {
-  for (let i = STAGES.length - 1; i >= 0; i--) {
-    if (points >= STAGES[i].threshold) return { ...STAGES[i], index: i };
-  }
-  return { ...STAGES[0], index: 0 };
-}
-
-// ---------------------------------------------------------------------------
-// Progress within the current stage (0–1)
-// Progress is calculated between this stage's threshold and the next one's.
-// ---------------------------------------------------------------------------
-function getStageProgress(points) {
-  const stage = getStage(points);
-  const next = STAGES[stage.index + 1];
-  if (!next) return 1; // already at max stage
-  const range = next.threshold - stage.threshold;
-  return (points - stage.threshold) / range;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,30 +64,29 @@ function getPetMood(presentCount, lastPresenceTime) {
 // Render: update all DOM elements to reflect current state
 // ---------------------------------------------------------------------------
 function render(growthPoints, memberStates, presentCount, lastPresenceTime) {
-  const stage = getStage(growthPoints);
-  const progress = getStageProgress(growthPoints);
+  const { level, progress, size, isMax } = getLevel(growthPoints);
   const mood = getPetMood(presentCount, lastPresenceTime);
   const rate = feedingRate(presentCount);
 
-  // --- Pet body ---
+  // --- Pet image ---
   const petEl = document.getElementById('pet');
-  petEl.className = `pet stage-${stage.name.toLowerCase()} mood-${mood}`;
-  petEl.style.width  = stage.size + 'px';
-  petEl.style.height = stage.size + 'px';
+  const src = mood === 'happy' ? 'imgs/noiman-happy.png'
+            : mood === 'sad'   ? 'imgs/noiman-sad.png'
+            :                    'imgs/noiman-base.png';
+  petEl.src = src;
+  petEl.className = `pet mood-${mood}`;
+  petEl.style.width  = size + 'px';
+  petEl.style.height = size + 'px';
 
-  // Update face expression
-  updatePetFace(mood, stage);
-
-  // --- Stage label ---
-  document.getElementById('stage-name').textContent = stage.name;
+  // --- Level label ---
+  document.getElementById('stage-name').textContent = `Lv.${level}`;
 
   // --- Progress bar ---
   const pct = Math.round(progress * 100);
   document.getElementById('progress-fill').style.width = pct + '%';
-  const nextStage = STAGES[stage.index + 1];
-  document.getElementById('progress-text').textContent = nextStage
-    ? `${Math.floor(growthPoints)} / ${nextStage.threshold} pts`
-    : `${Math.floor(growthPoints)} pts — fully grown!`;
+  document.getElementById('progress-text').textContent = isMax
+    ? `${Math.floor(growthPoints)} pts — fully grown!`
+    : `${Math.floor(growthPoints)} / ${level * CONFIG.POINTS_PER_LEVEL} pts`;
 
   // --- Feeding rate indicator ---
   const feedEl = document.getElementById('feeding-rate');
@@ -138,60 +116,56 @@ function renderAvatars(memberStates) {
   if (!memberStates || memberStates.length === 0) return;
 
   const total = memberStates.length;
-  const members = memberStates;
 
-  members.forEach((member, i) => {
-    let avatarEl = document.getElementById(`avatar-${member.id}`);
-    if (!avatarEl) return; // elements are pre-built in HTML
+  // Ellipse params matching scene layout
+  const cx = 211, cy = 211, rx = 172, ry = 150;
+  const startAngleDeg = -90;
+
+  memberStates.forEach((member, i) => {
+    const angleDeg = startAngleDeg + (360 / total) * i;
+    const angleRad = angleDeg * Math.PI / 180;
+    const x = Math.round(cx + rx * Math.cos(angleRad) - 24); // -24 = half of 48px avatar
+    const y = Math.round(cy + ry * Math.sin(angleRad) - 24);
 
     const present = isPresent(member);
+
+    let avatarEl = document.getElementById(`avatar-${member.id}`);
+    if (!avatarEl) {
+      // Create new avatar element
+      avatarEl = document.createElement('div');
+      avatarEl.id = `avatar-${member.id}`;
+      avatarEl.title = `ID: ${member.id}`;
+      avatarEl.style.left = x + 'px';
+      avatarEl.style.top  = y + 'px';
+
+      // Try user photo; fall back to initials
+      const img = document.createElement('img');
+      img.src = `imgs/users/id-${member.id}.jpeg`;
+      img.alt = '';
+      img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;';
+      img.onerror = function () {
+        if (!this.dataset.triedJpg) {
+          this.dataset.triedJpg = '1';
+          this.src = `imgs/users/id-${member.id}.jpg`;
+        } else if (!this.dataset.triedPng) {
+          this.dataset.triedPng = '1';
+          this.src = `imgs/users/id-${member.id}.png`;
+        } else if (!this.dataset.triedWebp) {
+          this.dataset.triedWebp = '1';
+          this.src = `imgs/users/id-${member.id}.webp`;
+        } else {
+          this.remove();
+          if (!avatarEl.textContent) avatarEl.textContent = member.name || member.id;
+        }
+      };
+      avatarEl.appendChild(img);
+      container.appendChild(avatarEl);
+    }
+
     avatarEl.className = 'avatar ' + (present ? 'present' : 'away');
   });
 }
 
-// ---------------------------------------------------------------------------
-// Update pet face elements based on mood and stage
-// ---------------------------------------------------------------------------
-function updatePetFace(mood, stage) {
-  const face = document.getElementById('pet-face');
-  if (!face) return;
-
-  // Clear extra decorations
-  const existingExtras = document.querySelectorAll('.pet-extra');
-  existingExtras.forEach(el => el.remove());
-
-  // Update mouth
-  const mouth = document.getElementById('pet-mouth');
-  if (mouth) {
-    mouth.className = 'mouth ' + mood;
-  }
-
-  // Update eyes
-  const eyes = document.querySelectorAll('.eye');
-  eyes.forEach(eye => {
-    eye.className = 'eye ' + mood;
-  });
-
-  // Teardrop for sad state
-  if (mood === 'sad') {
-    const tear = document.createElement('div');
-    tear.className = 'tear pet-extra';
-    document.getElementById('pet').appendChild(tear);
-  }
-
-  // Heart for happy state (only sprout and above)
-  if (mood === 'happy' && stage.index >= 1) {
-    const heart = document.createElement('div');
-    heart.className = 'heart pet-extra';
-    document.getElementById('pet').appendChild(heart);
-  }
-
-  // Show/hide sprout feature
-  const sprout = document.getElementById('pet-sprout');
-  if (sprout) {
-    sprout.style.display = stage.index >= 1 ? 'block' : 'none';
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Feeding animation: particles fly from present member avatars to the pet
@@ -255,10 +229,10 @@ async function tick() {
     const presentCount = members.filter(isPresent).length;
     const rate = feedingRate(presentCount);
 
-    // Add growth points (capped at MAX_GROWTH_POINTS)
+    // Add growth points (capped at max level)
     growthPoints = Math.min(
       growthPoints + rate * CONFIG.GROWTH_PER_TICK,
-      CONFIG.MAX_GROWTH_POINTS
+      CONFIG.POINTS_PER_LEVEL * CONFIG.MAX_LEVEL
     );
 
     // Update last presence timestamp if anyone is home

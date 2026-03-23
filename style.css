@@ -79,22 +79,26 @@ header p.subtitle {
   font-weight: 700;
   color: #7a6353;
   border: 3px solid #c8bdb5;
-  transition: border-color 0.4s ease, background-color 0.4s ease;
+  transition: border-color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease, opacity 0.4s ease, filter 0.4s ease;
   cursor: default;
   user-select: none;
   /* Replace initials with real member names and add background-image for photos */
 }
 
 .avatar.present {
-  border-color: #7bbf7b;
+  border-color: #4caf50;
   background-color: #dff0df;
   color: #3d7a3d;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.25), 0 2px 8px rgba(76, 175, 80, 0.3);
+  transform: scale(1.15);
 }
 
 .avatar.away {
   border-color: #c8bdb5;
   background-color: #eee8e2;
   color: #a09080;
+  opacity: 0.5;
+  filter: grayscale(40%);
 }
 
 /* Tiny presence dot */
@@ -130,200 +134,25 @@ header p.subtitle {
 }
 
 /* ---------------------------------------------------------------------------
-   Pet body — CSS creature
-   Replace these divs with <img> tags pointing to your mascot images
+   Pet image
 --------------------------------------------------------------------------- */
 .pet {
-  position: relative;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  object-fit: contain;
   transition:
     width  0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-    height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 0.5s ease,
-    box-shadow 0.5s ease;
+    height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: default;
 }
 
-/* --- Mood: happy --- */
 .pet.mood-happy {
-  background-color: #f7c59f;
-  box-shadow: 0 0 0 6px #fce8d5, 0 4px 18px rgba(181, 113, 74, 0.18);
   animation: float 3s ease-in-out infinite;
-}
-
-/* --- Mood: neutral --- */
-.pet.mood-neutral {
-  background-color: #e8d8c8;
-  box-shadow: 0 0 0 6px #f2ece5, 0 4px 12px rgba(120, 90, 60, 0.10);
-}
-
-/* --- Mood: sad --- */
-.pet.mood-sad {
-  background-color: #c8c0b8;
-  box-shadow: 0 0 0 6px #ddd8d4, 0 4px 12px rgba(100, 90, 80, 0.12);
-  filter: saturate(0.5);
 }
 
 /* Gentle floating animation for happy pet */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-6px); }
-}
-
-/* ---------------------------------------------------------------------------
-   Pet face
---------------------------------------------------------------------------- */
-#pet-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.eyes {
-  position: absolute;
-  top: 36%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 20%;
-}
-
-.eye {
-  width: 12%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background-color: #5c3d2e;
-  transition: background-color 0.4s;
-  position: relative;
-}
-
-/* Happy eyes: slight squint — small shine dot */
-.eye.happy::after {
-  content: '';
-  position: absolute;
-  top: 15%;
-  left: 20%;
-  width: 35%;
-  height: 35%;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.7);
-}
-
-/* Sad eyes: smaller */
-.eye.sad {
-  background-color: #8a7060;
-  transform: scaleY(0.7);
-}
-
-/* Mouth */
-.mouth {
-  position: absolute;
-  bottom: 30%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30%;
-  height: 12%;
-  border-radius: 0 0 50px 50px;
-  border: 3px solid #5c3d2e;
-  border-top: none;
-  transition: border-color 0.4s, transform 0.4s;
-}
-
-/* Happy mouth: normal smile */
-.mouth.happy {
-  border-color: #5c3d2e;
-  background-color: rgba(230, 100, 70, 0.15);
-}
-
-/* Neutral mouth: flat line */
-.mouth.neutral {
-  border-radius: 2px;
-  height: 3px;
-  border-bottom: none;
-  border-right: none;
-  border-left: none;
-  border-top: 3px solid #8a7060;
-  background: none;
-  width: 25%;
-  bottom: 28%;
-}
-
-/* Sad mouth: frown */
-.mouth.sad {
-  border-radius: 50px 50px 0 0;
-  border-top: 3px solid #8a7060;
-  border-bottom: none;
-  background: none;
-  bottom: 26%;
-  border-color: #8a7060;
-}
-
-/* ---------------------------------------------------------------------------
-   Pet stage extras (sprout leaf on top)
---------------------------------------------------------------------------- */
-#pet-sprout {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 22px;
-  background-color: #7bbf7b;
-  border-radius: 50% 50% 0 50%;
-  transform-origin: bottom center;
-  transform: translateX(-50%) rotate(-10deg);
-  display: none; /* shown via JS when stage >= Sprout */
-}
-
-/* ---------------------------------------------------------------------------
-   Tear (sad extra)
---------------------------------------------------------------------------- */
-.tear {
-  position: absolute;
-  bottom: 24%;
-  right: 28%;
-  width: 7px;
-  height: 10px;
-  background-color: #a8c8e0;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(45deg);
-  animation: teardrop 1.8s ease-in-out infinite;
-}
-
-@keyframes teardrop {
-  0%, 100% { opacity: 0.5; transform: rotate(45deg) translateY(0); }
-  50%       { opacity: 1;   transform: rotate(45deg) translateY(3px); }
-}
-
-/* ---------------------------------------------------------------------------
-   Heart (happy extra)
---------------------------------------------------------------------------- */
-.heart {
-  position: absolute;
-  top: -10px;
-  right: 10%;
-  width: 16px;
-  height: 14px;
-  color: #e87070;
-  font-size: 14px;
-}
-
-.heart::before {
-  content: '♥';
-  position: absolute;
-  animation: heartbeat 1.2s ease-in-out infinite;
-  color: #e87070;
-}
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1);   opacity: 0.9; }
-  50%       { transform: scale(1.3); opacity: 1; }
 }
 
 /* ---------------------------------------------------------------------------
